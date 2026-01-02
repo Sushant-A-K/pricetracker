@@ -6,6 +6,9 @@ from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 import re
 import os
 
@@ -40,22 +43,28 @@ PRODUCTS = [
 
 def get_price(driver, url):
     driver.get(url)
-    time.sleep(10)
+    WebDriverWait(driver, 25).until(
+        EC.presence_of_element_located((By.CSS_SELECTOR, "span.a-price-whole"))
+    )
     soup = BeautifulSoup(driver.page_source, "html.parser")
 
-    price_span = soup.select_one("span.a-price-whole")
-    if not price_span:
-        raise ValueError("Price not found")
+    selectors = [
+        "span.a-price-whole",
+        "span.a-offscreen",
+        "#priceblock_ourprice",
+        "#priceblock_dealprice",
+        "#corePrice_feature_div span.a-offscreen"
+    ]
 
-    raw = price_span.text.strip()
+    for sel in selectors:
+        el = soup.select_one(sel)
+        if el:
+            raw = el.text
+            digits = re.sub(r"[^\d]", "", raw)
+            if digits:
+                return int(digits)
 
-    # Keep only digits
-    cleaned = re.sub(r"[^\d]", "", raw)
-
-    if not cleaned:
-        raise ValueError(f"Could not clean price from: {raw}")
-
-    return int(cleaned)
+    raise ValueError("Amazon blocked price or page changed")
 
 
 def send_email(product, price):
