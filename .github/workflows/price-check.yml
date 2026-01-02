@@ -1,0 +1,32 @@
+name: Daily Price Tracker
+
+on:
+  schedule:
+    - cron: "0 3 * * *"    # 9:00 AM IST
+    - cron: "0 15 * * *"   # 9:00 PM IST
+  workflow_dispatch:
+
+jobs:
+  track-prices:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run price tracker
+        env:
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+          ALERT_TO:  ${{ secrets.ALERT_TO }}
+        run: python price_tracker.py
