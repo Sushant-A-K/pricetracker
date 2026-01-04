@@ -29,7 +29,7 @@ PRODUCTS = [
     {
         "name": "Logitech G29",
         "url": "https://www.amazon.in/dp/B013DYX7BS",
-        "threshold": 30000
+        "threshold": 28000
     },
     {
         "name": "Green Soul Table Height Adjustable RGB Wireless",
